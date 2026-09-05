@@ -1,4 +1,3 @@
-import os
 import textwrap
 from functools import partial
 from typing import Optional
@@ -18,7 +17,7 @@ from UI.Submenus.SubMenu import KH2Submenu
 from UI.Submenus.TextureRecolorSettingsDialog import TextureRecolorSettingsDialog
 from UI.configui import OPENKH_LOCATION_NOT_CHOSEN
 from UI.qtlib import button, clear_layout, show_alert
-from UI.worker import CosmeticsZipWorker
+from UI.worker import CosmeticsModWorker
 
 _IN_GAME_MUSIC_GROUP="in_game_music"
 _CUSTOM_MUSIC_GROUP="custom_music"
@@ -322,6 +321,7 @@ class CosmeticsMenu(KH2Submenu):
             platform="PC",
             tourney=False,
             custom_cosmetics_executables=self.custom_cosmetics.collect_custom_executable_files(),
+            attempt_mod_install=configui.should_attempt_mod_install(parent=self, force_prompt=False),
         )
-        worker = CosmeticsZipWorker(self, self.settings, extra_data)
+        worker = CosmeticsModWorker(self, self.settings, extra_data)
         worker.start()

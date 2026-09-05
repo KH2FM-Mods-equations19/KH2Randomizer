@@ -354,8 +354,12 @@ class KH2RandomizerApp(QMainWindow):
         self.markdown_seed_string_toggle.setCheckable(True)
         self.markdown_seed_string_toggle.setChecked(self.markdown_seed_string)
         self.config_menu = QMenu('Configure')
+        self.config_menu.addAction('Find OpenKH Folder', self.openkh_folder_getter)
+        self.config_menu.addAction(
+            "Configure Seed Output",
+            lambda: configui.should_attempt_mod_install(parent=self, force_prompt=True),
+        )
         cosmetic_submenu = QMenu("Cosmetics")
-        cosmetic_submenu.addAction('Find OpenKH Folder', self.openkh_folder_getter)
         cosmetic_submenu.addAction('Choose Custom Music Folder', self.custom_music_folder_getter)
         cosmetic_submenu.addAction('Choose Custom Visuals Folder', self.custom_visuals_folder_getter)
         self.config_menu.addMenu(cosmetic_submenu)
@@ -466,17 +470,17 @@ class KH2RandomizerApp(QMainWindow):
         generate_layout.addWidget(generate_label)
 
         self.emu_button = QPushButton("Generate Seed (PCSX2)")
-        self.emu_button.clicked.connect(lambda: self.makeSeed("PCSX2"))
+        self.emu_button.clicked.connect(lambda: self.make_seed("PCSX2"))
         generate_layout.addWidget(self.emu_button, stretch=1)
         self.emu_button.setVisible(False)
 
         self.pc_button = QPushButton("Generate Seed (PC)")
-        self.pc_button.clicked.connect(lambda: self.makeSeed("PC"))
+        self.pc_button.clicked.connect(lambda: self.make_seed("PC"))
         generate_layout.addWidget(self.pc_button, stretch=1)
         self.pc_button.setVisible(False)
 
         self.both_button = QPushButton("Generate Seed (PC/PCSX2)")
-        self.both_button.clicked.connect(lambda: self.makeSeed("Both"))
+        self.both_button.clicked.connect(lambda: self.make_seed("Both"))
         generate_layout.addWidget(self.both_button, stretch=1)
 
         generate_frame = QFrame()
@@ -605,7 +609,7 @@ class KH2RandomizerApp(QMainWindow):
             self.tourney_seed_path = Path(output_path) / tourney_name
             self.tourney_name = tourney_name
 
-            self.makeSeed(seed_platform)
+            self.make_seed(seed_platform)
             self.num_tourney_seeds = 0
 
             message = QMessageBox(text=f"Done making seeds")
@@ -733,14 +737,20 @@ class KH2RandomizerApp(QMainWindow):
                 self.progress_bar.setValue(dummy_rando.num_available_items)
             self.progress_label.setText(text)
 
-    def makeSeed(self,platform):
+    def make_seed(self, platform: str):
         self.fixSeedName()
-        if self.num_tourney_seeds>0:
+        if self.num_tourney_seeds > 0:
             message = QMessageBox(text="Tourney Mode in Use. Spoiler will be generated outside the zip, and cosmetics disabled.")
             message.setWindowTitle("KH2 Seed Generator")
             message.exec()
             # disable all cosmetics, generate a spoiler log, but don't put it in the zip
-            extra_data = ExtraConfigurationData(platform=platform, tourney=True, custom_cosmetics_executables=[],disable_emu_warning=self.disable_emu_warnings)
+            extra_data = ExtraConfigurationData(
+                platform=platform,
+                tourney=True,
+                custom_cosmetics_executables=[],
+                disable_emu_warning=self.disable_emu_warnings,
+                attempt_mod_install=False,
+            )
             self.genTourneySeeds(extra_data)
         else:
             extra_data = ExtraConfigurationData(
@@ -748,6 +758,7 @@ class KH2RandomizerApp(QMainWindow):
                 tourney=False,
                 custom_cosmetics_executables=self.custom_cosmetics.collect_custom_executable_files(),
                 disable_emu_warning=self.disable_emu_warnings,
+                attempt_mod_install=configui.should_attempt_mod_install(parent=self, force_prompt=False),
             )
 
             rando_settings = self.make_rando_settings()

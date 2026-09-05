@@ -3822,3 +3822,4 @@ class ExtraConfigurationData:
     tourney: bool
     custom_cosmetics_executables: list[str]
     disable_emu_warning: bool = True
+    attempt_mod_install: bool = False

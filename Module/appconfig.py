@@ -9,6 +9,9 @@ from Module import platformutils
 AUTOSAVE_FOLDER = "auto-save"
 PRESET_FOLDER = "presets"
 
+OUTPUT_PREFERENCE_MODS_MANAGER = "mm"
+OUTPUT_PREFERENCE_FILE = "file"
+
 
 def settings_presets_folder() -> Path:
     return Path(PRESET_FOLDER).absolute()
@@ -85,22 +88,19 @@ def write_openkh_path(selected_directory):
 
 
 def is_openkh_folder(selected_path: Path) -> bool:
-    """Accept both extracted OpenKH installations and Linux config folders."""
-    mods_manager_names = (
-        "OpenKh.Tools.ModsManager.exe",
-        "OpenKh.Tools.ModsManager",
-        "OpenKh.Tools.ModsManager.Avalonia",
-    )
-    tool_directories = (selected_path, selected_path / "Apps")
-    has_mods_manager = any(
+    mods_manager_names = [
+        "OpenKh.Tools.ModManager.exe",        # Avalonia Mods Manager
+        "OpenKh.Tools.ModsManager.exe",       # Legacy Mods Manager
+        "OpenKh.Tools.ModManager",            # Avalonia Mods Manager (Linux)
+        "OpenKh.Tools.ModsManager",           # Possibly an older Linux prototype?
+        "OpenKh.Tools.ModsManager.Avalonia",  # Possibly the Linux one that never got merged
+    ]
+    tool_directories = [selected_path, selected_path / "Apps"]
+    return any(
         (tool_directory / name).is_file()
         for tool_directory in tool_directories
         for name in mods_manager_names
     )
-
-    # Native Linux installations keep Mods Manager data in ~/.config/OpenKh.
-    has_mods_manager_config = (selected_path / "mods-manager.yml").is_file()
-    return has_mods_manager or has_mods_manager_config
 
 
 def read_custom_music_path() -> Optional[Path]:
@@ -119,8 +119,20 @@ def write_custom_visuals_path(selected_directory):
     update_app_config('custom_visuals_folder', selected_directory)
 
 
+def read_output_preference() -> str | None:
+    return read_app_config().get("outputPreference")
+
+
+def write_output_preference(preference: str):
+    update_app_config("outputPreference", preference)
+
+
 def extracted_data_path() -> Optional[Path]:
-    return _read_mods_manager_config_dir(["extractedGameDataPath", "gameDataPath"])
+    return _read_mods_manager_config_dir([
+        "DataPath",               # Avalonia Mods Manager, inside the `Frontend` grouping
+        "extractedGameDataPath",  # The unfortunately-timed rename
+        "gameDataPath",           # The original name
+    ])
 
 
 def extracted_game_path(game: str) -> Optional[Path]:
@@ -136,22 +148,50 @@ def extracted_game_path(game: str) -> Optional[Path]:
         return None
 
 
-def goa_mod_path() -> Optional[Path]:
-    """Returns the path to the Garden of Assemblage mod, or None if not found."""
+def kh2_mods_path(local: bool=False) -> Path | None:
+    """
+    Returns the path to KH2 mods, or None if not found.
+
+    local controls whether the result should attempt to be the path for local mods (newer Mods Manager separates them)
+    """
     openkh_path = read_openkh_path()
     if openkh_path is None:
         return None
 
-    mods_path = _read_mods_manager_config_dir(["installedModsPath"])
+    mods_path = _read_mods_manager_config_dir([
+        "ModPath",            # Avalonia Mods Manager, inside the `Frontend` grouping
+        "installedModsPath",  # The unfortunately-timed rename
+        # Not sure what the original was meant to be, but we only started supporting custom once the rename happened
+    ])
     if not mods_path:
         mods_path = openkh_path / "mods"
 
-    kh2_mods_path = mods_path / "kh2"
-    if not kh2_mods_path.is_dir():
+    kh2_path = mods_path / "kh2"
+    if not kh2_path.is_dir():
+        return None
+
+    if local:
+        # File that indicates it's the newer Avalonia Mods Manager
+        # TODO: Might be better to just detect which version up front rather than checking files just-in-time?
+        memory_file_path = kh2_path / "mod_memory.yml"
+        if memory_file_path.is_file():
+            local_path = kh2_path / "local"
+            local_path.mkdir(parents=True, exist_ok=True)
+            return local_path
+        else:
+            return kh2_path
+
+    return kh2_path
+
+
+def goa_mod_path() -> Path | None:
+    """Returns the path to the Garden of Assemblage mod, or None if not found."""
+    game_mods_path = kh2_mods_path(local=False)
+    if not game_mods_path:
         return None
 
     # Best effort here to try to find GoA ROM mod. If this doesn't seem good enough, could change to a folder chooser.
-    for top_mod_dir in kh2_mods_path.iterdir():
+    for top_mod_dir in game_mods_path.iterdir():
         if not top_mod_dir.is_dir():
             continue
 
@@ -165,24 +205,33 @@ def goa_mod_path() -> Optional[Path]:
     return None
 
 
-def _read_mods_manager_config_dir(keys: list[str]) -> Optional[Path]:
-    """Returns a path configured in the mods-manager.yml file at one of the provided keys, or None if not found."""
+def _read_mods_manager_config_dir(keys: list[str]) -> Path | None:
+    """Returns a path configured in the Mods Manager config file at one of the provided keys, or None if not found."""
     openkh_path = read_openkh_path()
     if openkh_path is None:
         return None
 
-    mods_manager_yml_path = openkh_path / "mods-manager.yml"
-    if not mods_manager_yml_path.is_file():
+    def read_from_file(file_path: Path, prefix: str | None = None) -> Path | None:
+        if file_path.is_file():
+            with open(file_path, encoding="utf-8") as opened_file:
+                config_yaml = yaml.safe_load(opened_file)
+
+                if prefix is not None:
+                    config_yaml = config_yaml.get(prefix, {})
+
+                for key in keys:
+                    value = config_yaml.get(key, "")
+                    if value:
+                        directory = platformutils.path_from_config_value(value)
+                        if directory.is_dir():
+                            return directory
+
         return None
 
-    with open(mods_manager_yml_path, encoding="utf-8") as mod_manager_file:
-        mod_manager_yaml = yaml.safe_load(mod_manager_file)
+    # Making an assumption here that any of the config dirs are under the "Frontend" prefix.
+    # Obviously subject to change, but we'd need to change our code regardless if it does.
+    result = read_from_file(openkh_path / "config.yml", prefix="Frontend")
+    if result is not None:
+        return result
 
-        for key in keys:
-            value = mod_manager_yaml.get(key, "")
-            if value:
-                directory = platformutils.path_from_config_value(value)
-                if directory.is_dir():
-                    return directory
-
-        return None
+    return read_from_file(openkh_path / "mods-manager.yml")

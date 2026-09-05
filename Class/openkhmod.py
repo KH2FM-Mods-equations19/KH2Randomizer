@@ -1,5 +1,6 @@
 import re
 from copy import deepcopy
+from datetime import datetime
 from enum import StrEnum
 from pathlib import PurePath, Path
 from typing import Any, Optional, Iterator, Union
@@ -8,6 +9,7 @@ from zipfile import ZipFile
 import yaml
 
 from Module.resources import resource_path
+from Module.version import LOCAL_UI_VERSION
 
 ModPath = Union[str, PurePath]
 StrDict = dict[str, Any]
@@ -532,6 +534,11 @@ class ModYml:
             return str(source_file)
         else:
             return source_file.as_posix()
+
+    @staticmethod
+    def default_generated_mod_description() -> str:
+        timestamp = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+        return f"Generated [{timestamp}] by the KH2 Randomizer Seed Generator, version {LOCAL_UI_VERSION}."
 
 
 class Bonuses:

@@ -1,8 +1,10 @@
 import os
+import shutil
 import subprocess
 from io import BytesIO
 from pathlib import Path
 from typing import Optional
+from zipfile import ZipFile
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QProgressDialog, QFileDialog, QWidget, QMessageBox
@@ -13,6 +15,7 @@ from Module import appconfig, platformutils
 from Module.RandomizerSettings import RandomizerSettings
 from Module.generate import generateSeed, generateMultiWorldSeed
 from Module.zipper import BossEnemyOnlyZip, CosmeticsOnlyZip, SeedZipResult
+from UI import qtlib
 from UI.workers import BaseWorkerThread, BaseWorker
 
 
@@ -61,6 +64,56 @@ class GenerateModWorker(BaseWorker):
             appconfig.write_last_save_path(str(Path(outfile_name).parent))
 
     @staticmethod
+    def install_mod(zip_data: BytesIO, mod_name: str) -> bool:
+        openkh_path = appconfig.read_openkh_path()
+        if not openkh_path:
+            return False
+
+        kh2_mods_path = appconfig.kh2_mods_path(local=True)
+        if not kh2_mods_path:
+            return False
+
+        mod_path = kh2_mods_path / mod_name
+        if mod_path.is_dir():
+            overwrite_reply = QMessageBox.question(
+                None,
+                "KH2 Seed Generator",
+                f"{mod_name} mod already exists. Overwrite?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if overwrite_reply == QMessageBox.StandardButton.Yes:
+                shutil.rmtree(mod_path)
+            else:
+                return False
+
+        mod_path.mkdir(parents=True, exist_ok=True)
+
+        with ZipFile(zip_data, "r") as zip_file:
+            zip_file.extractall(mod_path)
+
+        installed_message = f"Installed {mod_name} mod at\n{mod_path}"
+
+        if platformutils.is_windows() or platformutils.wine_available():
+            mods_manager_exe = openkh_path / "OpenKh.Tools.ModsManager.exe"
+            if mods_manager_exe.is_file():
+                open_reply = QMessageBox.question(
+                    None,
+                    "KH2 Seed Generator",
+                    f"{installed_message}\n\nOpen Mods Manager?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No,
+                )
+                if open_reply == QMessageBox.StandardButton.Yes:
+                    command = platformutils.windows_exe_command(mods_manager_exe, args=[])
+                    subprocess.call(command)
+                return True
+
+        # If we got here we don't know how to open Mods Manager from here
+        qtlib.show_alert(installed_message)
+        return True
+
+    @staticmethod
     def display_emu_warnings(rando_settings: RandomizerSettings, extra_data: ExtraConfigurationData):
         if not extra_data.disable_emu_warning and rando_settings.keyblades_unlock_chests and extra_data.platform == "PCSX2":
             from UI import theme
@@ -70,7 +123,7 @@ class GenerateModWorker(BaseWorker):
     A tutorial to do so can be found here: <a href="LINK_HERE" style="color: {theme.LinkColor}">Tutorial</a><br><br>
     '''
             message = QMessageBox(text=explainer_text)
-            message.setTextFormat(Qt.RichText)
+            message.setTextFormat(Qt.TextFormat.RichText)
             message.setWindowTitle("KH2 Seed Generator")
             message.exec()
 
@@ -106,9 +159,16 @@ class GenerateSeedWorker(GenerateModWorker):
         )
 
     def handle_result(self, result: SeedZipResult):
+        extra_data = self.extra_data
         zip_data, _, _ = result
-        self.download_mod(zip_data, output_file_name="randoseed.zip", title="Randomizer Seed")
-        self.display_emu_warnings(self.rando_settings, self.extra_data)
+
+        installed = False
+        if extra_data.attempt_mod_install:
+            installed = self.install_mod(zip_data, mod_name="randoseed")
+        if not installed:
+            self.download_mod(zip_data, output_file_name="randoseed.zip", title="Randomizer Seed")
+
+        self.display_emu_warnings(self.rando_settings, extra_data)
 
     def handle_failure(self, failure: Exception):
         super().handle_failure(failure)
@@ -156,7 +216,7 @@ class GenerateMultiWorldSeedWorker(GenerateModWorker):
             raise failure
 
 
-class GenerateCosmeticsZipThread(BaseWorkerThread):
+class GenerateCosmeticsModThread(BaseWorkerThread):
 
     def __init__(self, ui_settings: SeedSettings, extra_data: ExtraConfigurationData):
         super().__init__()
@@ -171,7 +231,7 @@ class GenerateCosmeticsZipThread(BaseWorkerThread):
         return zip_data
 
 
-class CosmeticsZipWorker(GenerateModWorker):
+class CosmeticsModWorker(GenerateModWorker):
 
     def __init__(self, parent: QWidget, ui_settings: SeedSettings, extra_data: ExtraConfigurationData):
         super().__init__(parent)
@@ -179,16 +239,20 @@ class CosmeticsZipWorker(GenerateModWorker):
         self.extra_data = extra_data
 
     def create_worker_thread(self) -> BaseWorkerThread:
-        return GenerateCosmeticsZipThread(self.ui_settings, self.extra_data)
+        return GenerateCosmeticsModThread(self.ui_settings, self.extra_data)
 
     def create_progress_dialog(self) -> Optional[QProgressDialog]:
         return self.basic_wait_dialog("Creating cosmetics-only mod")
 
     def handle_result(self, result: BytesIO):
-        self.download_mod(result, output_file_name="randomized-cosmetics.zip", title="Cosmetics Mod")
+        installed = False
+        if self.extra_data.attempt_mod_install:
+            installed = self.install_mod(result, mod_name="randomized-cosmetics")
+        if not installed:
+            self.download_mod(result, output_file_name="randomized-cosmetics.zip", title="Cosmetics Mod")
 
 
-class GenerateBossEnemyZipThread(BaseWorkerThread):
+class GenerateBossEnemyModThread(BaseWorkerThread):
 
     def __init__(self, seed_name: str, ui_settings: SeedSettings, platform: str):
         super().__init__()
@@ -203,19 +267,31 @@ class GenerateBossEnemyZipThread(BaseWorkerThread):
         return zip_data
 
 
-class BossEnemyZipWorker(GenerateModWorker):
+class BossEnemyModWorker(GenerateModWorker):
 
-    def __init__(self, parent: QWidget, seed_name: str, ui_settings: SeedSettings, platform: str):
+    def __init__(
+            self,
+            parent: QWidget,
+            seed_name: str,
+            ui_settings: SeedSettings,
+            platform: str,
+            attempt_mod_install: bool,
+    ):
         super().__init__(parent)
         self.ui_settings = ui_settings
         self.platform = platform
         self.seed_name = seed_name
+        self.attempt_mod_install = attempt_mod_install
 
     def create_worker_thread(self) -> BaseWorkerThread:
-        return GenerateBossEnemyZipThread(self.seed_name, self.ui_settings, self.platform)
+        return GenerateBossEnemyModThread(self.seed_name, self.ui_settings, self.platform)
 
     def create_progress_dialog(self) -> Optional[QProgressDialog]:
         return self.basic_wait_dialog("Creating boss/enemy-only mod")
 
     def handle_result(self, result: BytesIO):
-        self.download_mod(result, output_file_name="randomized-bosses-enemies.zip", title="Boss/Enemy Mod")
+        installed = False
+        if self.attempt_mod_install:
+            installed = self.install_mod(result, mod_name="randomized-bosses-enemies")
+        if not installed:
+            self.download_mod(result, output_file_name="randomized-bosses-enemies.zip", title="Boss/Enemy Mod")

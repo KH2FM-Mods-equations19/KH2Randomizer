@@ -1,6 +1,7 @@
+import textwrap
 from pathlib import Path
 
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 from Module import appconfig
 from Module.cosmetics import CosmeticsMod
@@ -50,3 +51,51 @@ def custom_visuals_folder_getter() -> bool:
     CosmeticsMod.bootstrap_custom_visuals_folder(Path(selected_directory))
     appconfig.write_custom_visuals_path(selected_directory)
     return True
+
+
+def should_attempt_mod_install(parent: QWidget | None, force_prompt: bool) -> bool:
+    output_preference = appconfig.read_output_preference()
+    if not output_preference or force_prompt:
+        message = textwrap.dedent("""
+        Generated seeds and mods can be installed directly into OpenKH Mods Manager.
+
+        When enabled, this skips the creation of seed/mod zip files altogether.
+
+        - Updated versions of the common trackers can be configured to load seeds directly from Mods Manager.
+
+        - The spoiler log (if any) can be found inside of the seed mod's folder.
+
+        - If in doubt, choose No.
+
+        - If you change your mind, use the Configure Seed Output option in the Configure menu to be asked again.
+        
+        
+        
+        Enable direct Mods Manager installation?
+        """).strip()
+        reply = QMessageBox.question(
+            parent,
+            "KH2 Seed Generator",
+            message,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            appconfig.write_output_preference(appconfig.OUTPUT_PREFERENCE_MODS_MANAGER)
+        elif reply == QMessageBox.StandardButton.No:
+            appconfig.write_output_preference(appconfig.OUTPUT_PREFERENCE_FILE)
+            return False
+        else:
+            return False
+    elif output_preference == appconfig.OUTPUT_PREFERENCE_MODS_MANAGER:
+        pass  # Fall through to below
+    else:
+        return False
+
+    kh2_mods_path = appconfig.kh2_mods_path(local=False)
+    if not kh2_mods_path:
+        show_alert(OPENKH_LOCATION_NOT_CHOSEN)
+        openkh_folder_getter()
+
+    return appconfig.kh2_mods_path(local=False) is not None

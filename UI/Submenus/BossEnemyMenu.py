@@ -5,8 +5,9 @@ from PySide6.QtWidgets import QPushButton
 
 from Class import seedSettings
 from Class.seedSettings import SeedSettings
+from UI import configui
 from UI.Submenus.SubMenu import KH2Submenu
-from UI.worker import BossEnemyZipWorker
+from UI.worker import BossEnemyModWorker
 
 
 class BossEnemyMenu(KH2Submenu):
@@ -47,5 +48,11 @@ class BossEnemyMenu(KH2Submenu):
         self.finalizeMenu()
 
     def _make_boss_enemy_only_mod(self, platform: str):
-        worker = BossEnemyZipWorker(self, self.seed_name_getter(), self.settings, platform)
+        worker = BossEnemyModWorker(
+            parent=self,
+            seed_name=self.seed_name_getter(),
+            ui_settings=self.settings,
+            platform=platform,
+            attempt_mod_install=configui.should_attempt_mod_install(parent=self, force_prompt=False),
+        )
         worker.start()
