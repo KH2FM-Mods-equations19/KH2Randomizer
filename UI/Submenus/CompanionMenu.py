@@ -25,6 +25,8 @@ class CompanionMenu(KH2Submenu):
         self.add_option(settingkey.ATTACK_DATA_KNOCKBACK_AMOUNT_PRESET)
         self.add_option(settingkey.ATTACK_DATA_MULTI_HIT_PRESET)
         self.add_option(settingkey.ATTACK_DATA_REVENGE_VALUE_PRESET)
+        self.add_option(settingkey.ATTACK_DATA_HPDRAIN_PRESET)
+        self.add_option(settingkey.ATTACK_DATA_DRIVEGAIN_PRESET)
         self.end_group("Attack Data Randomization Parameters", group_id = _ATTACK_DATA_PARAMS)
         self.end_column()
         

@@ -1766,6 +1766,8 @@ class SeedZip:
         multi_hit_preset = ui_settings.get(keys.ATTACK_DATA_MULTI_HIT_PRESET)
         knockback_amount_preset = ui_settings.get(keys.ATTACK_DATA_KNOCKBACK_AMOUNT_PRESET)
         exclude_basic_attack_preset = ui_settings.get(keys.EXCLUDE_SORA_ROXAS_BASE_ATTACK)
+        hpdrain_preset = ui_settings.get(keys.ATTACK_DATA_HPDRAIN_PRESET)
+        drivegain_preset = ui_settings.get(keys.ATTACK_DATA_DRIVEGAIN_PRESET)
         #Just do nothing if all options are turned off
         if(
             damage_preset == "DISABLED" and 
@@ -1774,14 +1776,16 @@ class SeedZip:
             multi_hit_preset == "DISABLED" and
             knockback_amount_preset == "DISABLED" and
             companions_damage == False and
-            kill_boss == 0
+            kill_boss == 0 and
+            hpdrain_preset == "DISABLED" and
+            drivegain_preset == "DISABLED"
         ):
             return
 
         atkp_organizer = mod._get_atkp_organizer()
 
         atkp_data_randomizer = atkpRandomizerClass(kill_boss, companions_damage)
-        randomized_data = atkp_data_randomizer.randomize_atkp_data(atkp_organizer.get_all_attack_ids(), atkp_organizer, damage_preset, element, revenge_value_preset, multi_hit_preset, knockback_amount_preset, exclude_basic_attack_preset)
+        randomized_data = atkp_data_randomizer.randomize_atkp_data(atkp_organizer.get_all_attack_ids(), atkp_organizer, damage_preset, element, revenge_value_preset, multi_hit_preset, knockback_amount_preset, exclude_basic_attack_preset, hpdrain_preset, drivegain_preset)
         for atkp_object in randomized_data:
             atkp_organizer.convert_atkp_object_to_dict_and_add_to_data(atkp_object)
 

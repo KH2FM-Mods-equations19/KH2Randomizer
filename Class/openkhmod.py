@@ -1043,7 +1043,7 @@ class ATKPObject:
         ComboGroup: int,
         RandomEffect: int,
         Kind,
-        HPDrain: int,
+        HpDrain: int,
     ):
         self.SubId = SubId
         self.Id = Id
@@ -1077,7 +1077,7 @@ class ATKPObject:
         self.ComboGroup = ComboGroup
         self.RandomEffect = RandomEffect
         self.Kind = Kind
-        self.HPDrain = HPDrain
+        self.HpDrain = HpDrain
         self.validate()
 
     def validate(self):
@@ -1094,8 +1094,10 @@ class ATKPObject:
         if self.CriticalAdjust < 0 or self.CriticalAdjust > 255:
             raise ValueError(f"CriticalAdjust {self.CriticalAdjust} outside bounds")
         # ushort
-        if self.Power < 0 or self.Power > 65535:
-            raise ValueError(f"Power {self.Power} outside bounds")
+        if self.Power < 0:
+            self.Power = 0
+        if self.Power > 65535:
+            self.Power = 65535
         # byte
         if self.Team < 0 or self.Team > 255:
             raise ValueError(f"Team {self.Team} outside bounds")
@@ -1109,18 +1111,18 @@ class ATKPObject:
         if self.EffectOnHit < 0 or self.EffectOnHit > 255:
             raise ValueError(f"EffectOnHit {self.EffectOnHit} outside bounds")
         # short 
-        if self.KnockbackStrength1 < -32768 or self.KnockbackStrength1 > 32767:
-            raise ValueError(f"KnockbackStrength1 {self.KnockbackStrength1} outside bounds")
+        if self.KnockbackStrength1 < -32768:
+            self.KnockbackStrength1 = -32768
+        if self.KnockbackStrength1 > 32767:
+            self.KnockbackStrength1 = 32767
         # short
-        if self.KnockbackStrength2 < -32768 or self.KnockbackStrength2 > 32767:
-            raise ValueError(f"KnockbackStrength2 {self.KnockbackStrength2} outside bounds")
+        if self.KnockbackStrength2 < -32768:
+            self.KnockbackStrength2 = -32768
+        if self.KnockbackStrength2 > 32767:
+            self.KnockbackStrength2 = 32767
         # short
         if self.Unknown < -32768 or self.Unknown > 32767:
             raise ValueError(f"Unknown {self.Unknown} outside bounds")
-        # string 
-        # if self.Flags not in [0,"BGHit","LimitPAX","Land","CapturePAX","ThankYou","KillBoss"]:
-        #     raise ValueError(f"Flags {self.Flags} outside bounds")
-        # string
         if self.RefactSelf not in ["Reflect","Guard","Nothing"]:
             raise ValueError(f"RefactSelf {self.RefactSelf} outside bounds")
         # string
@@ -1158,17 +1160,23 @@ class ATKPObject:
         if self.Switch < 0 or self.Switch > 255:
             raise ValueError(f"Switch {self.Switch} outside bounds")
         # ushort
-        if self.Interval < 0 or self.Interval > 65535:
-            raise ValueError(f"Interval {self.Interval} outside bounds")
+        if self.Interval < 0:
+            self.Interval = 0
+        if self.Interval > 65535:
+            self.Interval = 65535
         # byte
         if self.FloorCheck < 0 or self.FloorCheck > 255:
             raise ValueError(f"FloorCheck {self.FloorCheck} outside bounds")
         # byte
-        if self.DriveDrain < 0 or self.DriveDrain > 255:
-            raise ValueError(f"DriveDrain {self.DriveDrain} outside bounds")
+        if self.DriveDrain < 0:
+            self.DriveDrain = 0
+        if self.DriveDrain > 254:
+            self.DriveDrain = 254
         # byte
-        if self.RevengeDamage < 0 or self.RevengeDamage > 255:
-            raise ValueError(f"RevengeDamage {self.RevengeDamage} outside bounds")
+        if self.RevengeDamage < 0:
+            self.RevengeDamage = 0
+        if self.RevengeDamage > 254:
+            self.RevengeDamage = 254
         # string
         if self.AttackTrReaction not in ["Attack","Charge","Crash","Wall"]:
             raise ValueError(f"AttackTrReaction {self.AttackTrReaction} outside bounds")
@@ -1184,8 +1192,10 @@ class ATKPObject:
         if self.Kind not in [0,"ComboFinisher","AirComboFinisher","ReactionCommand"]:
             raise ValueError(f"Kind {self.Kind} outside bounds")
         # byte
-        if self.HPDrain < 0 or self.HPDrain > 255:
-            raise ValueError(f"HPDrain {self.HPDrain} outside bounds")
+        if self.HpDrain < 0:
+            self.HpDrain = 0
+        if self.HpDrain > 254:
+            self.HpDrain = 254
 
 
 class AttackEntriesOrganizer:
@@ -1231,7 +1241,7 @@ class AttackEntriesOrganizer:
                 "ComboGroup": atkp_object.ComboGroup,
                 "RandomEffect": atkp_object.RandomEffect,
                 "Kind": atkp_object.Kind,
-                "HPDrain": atkp_object.HPDrain,
+                "HpDrain": atkp_object.HpDrain,
             }
         )
 
@@ -1275,7 +1285,7 @@ class AttackEntriesOrganizer:
             values["ComboGroup"],
             values["RandomEffect"],
             values["Kind"],
-            values["HPDrain"],
+            values["HpDrain"],
         )
     
     # Obsolete, use the switch method instead to avoid any bugs

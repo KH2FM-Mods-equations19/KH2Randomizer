@@ -13,7 +13,9 @@ HEAVY_MAX_DIFFERENCE = 2.0
 HEAVY_MIN_DIFFERENCE = 0.8
 OVERPOWERED_MAX_DIFFERENCE = 3.0
 OVERPOWERED_MIN_DIFFERENCE = 1.2
-CHAOS_MAX_DIFFERENCE = 6.0
+NIGHTMARE_MAX_DIFFERENCE = 5.0
+NIGHTMARE_MIN_DIFFERENCE = 2.4
+CHAOS_MAX_DIFFERENCE = 8.0
 CHAOS_MIN_DIFFERENCE = 0.0
 
 LIST_OF_COMPANION_IDS = [
@@ -190,7 +192,7 @@ LIST_OF_COMPANION_IDS = [
 	883,
 	1210,
 ]
-KNOCBACK_LIST = [8, 11, 12]
+KNOCBACK_LIST = [8, 9, 10, 11, 12, 17, 18]
 
 ALL_DAMAGE_PRESETS = {
 	"DISABLED": [],
@@ -200,6 +202,7 @@ ALL_DAMAGE_PRESETS = {
 	"STRONG": [STRONG_MAX_DIFFERENCE, STRONG_MIN_DIFFERENCE],
 	"HEAVY": [HEAVY_MAX_DIFFERENCE, HEAVY_MIN_DIFFERENCE],
 	"OVERPOWERED": [OVERPOWERED_MAX_DIFFERENCE, OVERPOWERED_MIN_DIFFERENCE],
+	"NIGHTMARE": [NIGHTMARE_MAX_DIFFERENCE, NIGHTMARE_MIN_DIFFERENCE],
 	"CHAOS": [CHAOS_MAX_DIFFERENCE, CHAOS_MIN_DIFFERENCE],
 }
 ALL_KNOCKBACK_AMOUNT_PRESETS = {
@@ -210,27 +213,52 @@ ALL_KNOCKBACK_AMOUNT_PRESETS = {
 	"STRONG": [STRONG_MAX_DIFFERENCE, STRONG_MIN_DIFFERENCE],
 	"HEAVY": [HEAVY_MAX_DIFFERENCE, HEAVY_MIN_DIFFERENCE],
 	"OVERPOWERED": [OVERPOWERED_MAX_DIFFERENCE, OVERPOWERED_MIN_DIFFERENCE],
+	"NIGHTMARE": [NIGHTMARE_MAX_DIFFERENCE, NIGHTMARE_MIN_DIFFERENCE],
 	"CHAOS": [CHAOS_MAX_DIFFERENCE, CHAOS_MIN_DIFFERENCE],
 }
 ALL_REVENGE_VALUE_PRESETS = {
 	"DISABLED": [],
-	"WEAK": [0, 1],
-	"MILD": [0, 2],
-	"MEDIUM": [1, 2],
-	"STRONG": [1, 3],
-	"HEAVY": [2, 4],
-	"OVERPOWERED": [3, 8],
-	"CHAOS": [0, 20],
+	"WEAK": [1, 0],
+	"MILD": [2, 0],
+	"MEDIUM": [2, 1],
+	"STRONG": [3, 1],
+	"HEAVY": [4, 2],
+	"OVERPOWERED": [8, 3],
+	"NIGHTMARE": [11, 5],
+	"CHAOS": [24, 0],
 }
 ALL_MULTI_HIT_PRESETS = {
 	"DISABLED": [],
-	"WEAK": [5, 18, 32],
-	"MILD": [8, 16, 28],
-	"MEDIUM": [12, 12, 24],
-	"STRONG": [25, 8, 18],
-	"HEAVY": [35, 6, 14],
-	"OVERPOWERED": [40, 4, 12],
-	"CHAOS": [60, 2, 32],
+	"WEAK": [5, 8, 16],
+	"MILD": [8, 8, 16],
+	"MEDIUM": [12, 6, 14],
+	"STRONG": [25, 6, 12],
+	"HEAVY": [35, 5, 9],
+	"OVERPOWERED": [40, 4, 8],
+	"NIGHTMARE": [60, 2, 8],
+	"CHAOS": [90, 1, 36],
+}
+ALL_HPDRAIN_PRESETS = {
+	"DISABLED": [],
+	"WEAK": [10, 1, 2],
+	"MILD": [16, 1, 3],
+	"MEDIUM": [24, 1, 6],
+	"STRONG": [30, 3, 9],
+	"HEAVY": [40, 4, 12],
+	"OVERPOWERED": [50, 7, 18],
+	"NIGHTMARE": [80, 10, 26],
+	"CHAOS": [100, 1, 40],
+}
+ALL_DRIVEGAIN_PRESETS = {
+	"DISABLED": [],
+	"WEAK": [WEAK_MAX_DIFFERENCE, WEAK_MIN_DIFFERENCE],
+	"MILD": [MILD_MAX_DIFFERENCE, MILD_MIN_DIFFERENCE],
+	"MEDIUM": [MEDIUM_MAX_DIFFERENCE, MEDIUM_MIN_DIFFERENCE],
+	"STRONG": [STRONG_MAX_DIFFERENCE, STRONG_MIN_DIFFERENCE],
+	"HEAVY": [HEAVY_MAX_DIFFERENCE, HEAVY_MIN_DIFFERENCE],
+	"OVERPOWERED": [OVERPOWERED_MAX_DIFFERENCE, OVERPOWERED_MIN_DIFFERENCE],
+	"NIGHTMARE": [NIGHTMARE_MAX_DIFFERENCE, NIGHTMARE_MIN_DIFFERENCE],
+	"CHAOS": [CHAOS_MAX_DIFFERENCE, CHAOS_MIN_DIFFERENCE],
 }
 
 #Randomizing element in all IDs can be painful against certain enemies like gargoyles.
@@ -246,7 +274,58 @@ SORA_BASE_ATTACK_IDS = [
 	130,
 	133,
 	134,
-	926
+	926,
+	935,
+	937,
+	936,
+	944,
+	945,
+	962,
+	947,
+	946,
+	949,
+	948,
+	950,
+	951,
+	952,
+	953,
+	954,
+	955,
+	957,
+	956,
+	958,
+	959,
+	961,
+	960,
+	589,
+	590,
+	591,
+	1003,
+	1004,
+	1052,
+	1431,
+	1937,
+	1938,
+	1959,
+	1963,
+	1964,
+	1698,
+	699,
+	701,
+	888,
+	889,
+	1586,
+	1587,
+	716,
+	740,
+	741,
+	1590,
+	893,
+	713,
+	714,
+	1585,
+	886,
+	715,
 ]
 
 #Workaround for weird bug that doesn't let sora kill bosses for some reason
@@ -499,8 +578,145 @@ SORA_IDS = [
 	1585,
 	886,
 	715,
+	935,
+	937,
+	936,
+	944,
+	945,
+	962,
+	947,
+	946,
+	949,
+	948,
+	950,
+	951,
+	952,
+	953,
+	954,
+	955,
+	957,
+	956,
+	958,
+	959,
+	961,
+	960,
+	125,
+	589,
+	590,
+	591,
+	1003,
+	1004,
+	1052,
+	1431,
+	1937,
+	1938,
+	1959,
+	1963,
+	1964,
+	1698,
+	1086,
 ]
-
+LIMITFORM_LIMIT_IDS = [
+	1857,
+	1858,
+	1859,
+	1860,
+	1861,
+	1862,
+	1866,
+	1867,
+	1878,
+	1879,
+	1883,
+	1884,
+	1885,
+	1886,
+	1887,
+	1888,
+	1889,
+	1890,
+	1891,
+	1892,
+	1893,
+	1894,
+	1895,
+]
+NON_DRIVE_SORA_IDS = [
+	926,
+	126,
+	127,
+	128,
+	147,
+	131,
+	132,
+	890,
+	909,
+	968,
+	975,
+	129,
+	130,
+	133,
+	134,
+	170,
+	406,
+	854,
+	876,
+	911,
+	912,
+	915,
+	916,
+	917,
+	927,
+	963,
+	967,
+	1007,
+	1898,
+	1899,
+	1131,
+	1581,
+	1582,
+	1583,
+	1869,
+	1882,
+	1896,
+	1897,
+	1900,
+	1901,
+	1903,
+]
+NON_DRIVE_SORA_MAGIC_SUBIDS = [
+	0,
+	1,
+	2,
+	256,
+	258,
+	512,
+	513,
+	514,
+	515,
+	768,
+	769,
+	770,
+	771,
+	1024,
+	1025,
+	1280,
+	1284,
+]
+SORA_MAGIC_IDS = [
+	249,
+	250,
+	251,
+	574,
+	576,
+	578,
+	667,
+	668,
+	669,
+	248,
+	502,
+	658,
+]
 class atkpRandomizerClass:
 	def __init__(self, kill_boss, companion_damage):
 		self.companion_kill_boss = kill_boss
@@ -509,24 +725,40 @@ class atkpRandomizerClass:
 		self.KNOCKBACK_AMOUNT_PRESETS = []
 		self.REVENGE_VALUE_PRESETS = []
 		self.MULTI_HIT_PRESETS = []
+		self.HPDRAIN_PRESETS = []
+		self.DRIVEGAIN_PRESETS = []
 	
-	def randomize_atkp_data(self, list_data, atkp_organizer: AttackEntriesOrganizer, damage_preset: str, element, revenge_value_preset, multi_hit_preset, knockback_amount_preset, exclude_base_attack):
+	def randomize_atkp_data(self, list_data, atkp_organizer: AttackEntriesOrganizer, damage_preset: str, element, revenge_value_preset, multi_hit_preset, knockback_amount_preset, exclude_base_attack, HpDrain_preset, drivegain_preset):
 		attack_entries = []
 		final_attack_entries = []
 		self.DAMAGE_PRESETS = ALL_DAMAGE_PRESETS[damage_preset]
 		self.KNOCKBACK_AMOUNT_PRESETS = ALL_KNOCKBACK_AMOUNT_PRESETS[knockback_amount_preset]
 		self.REVENGE_VALUE_PRESETS = ALL_REVENGE_VALUE_PRESETS[revenge_value_preset]
 		self.MULTI_HIT_PRESETS = ALL_MULTI_HIT_PRESETS[multi_hit_preset]
+		self.HPDRAIN_PRESETS = ALL_HPDRAIN_PRESETS[HpDrain_preset]
+		self.DRIVEGAIN_PRESETS = ALL_DRIVEGAIN_PRESETS[drivegain_preset]
 
 		for attack_entry in list_data:
 			attack_entries.append(atkp_organizer.attack_entry_constructor(attack_entry))
 		for attack_entry in attack_entries:
 			attack_entry: ATKPObject
+			#Exclude Guard so it still works like normal
+			if attack_entry.Id == 161:
+				continue
 			#Workaround
 			if SORA_IDS.__contains__(attack_entry.Id):
 				attack_entry.Flags = "KillBoss"
+			if len(self.DRIVEGAIN_PRESETS) != 0:
+				if NON_DRIVE_SORA_IDS.__contains__(attack_entry.Id):
+					attack_entry.DriveDrain = min(max(int(round(self.randomize_value(attack_entry.DriveDrain, self.DRIVEGAIN_PRESETS[0], self.DRIVEGAIN_PRESETS[1]))), 0), 254)
+				if SORA_MAGIC_IDS.__contains__(attack_entry.Id) and NON_DRIVE_SORA_MAGIC_SUBIDS.__contains__(attack_entry.Id):
+					attack_entry.DriveDrain = min(max(int(round(self.randomize_value(attack_entry.DriveDrain, self.DRIVEGAIN_PRESETS[0], self.DRIVEGAIN_PRESETS[1]))), 0), 254)
+			
+			#Fix limit form limits not healing
+			if LIMITFORM_LIMIT_IDS.__contains__(attack_entry.Id):
+				attack_entry.HpDrain = random.randint(2, 15)
 			if len(self.DAMAGE_PRESETS) != 0:
-				attack_entry.Power = max(min(int(round(self.randomize_power(attack_entry.Power))), 65535), 0)
+				attack_entry.Power = max(min(int(round(self.randomize_value(attack_entry.Power, self.DAMAGE_PRESETS[0], self.DAMAGE_PRESETS[1]))), 65535), 0)
 			if element:
 				if exclude_base_attack:
 					if not SORA_BASE_ATTACK_IDS.__contains__(attack_entry.Id):
@@ -545,15 +777,19 @@ class atkpRandomizerClass:
 			if len(self.REVENGE_VALUE_PRESETS) != 0:
 				attack_entry.RevengeDamage = min(max(attack_entry.RevengeDamage + (self.randomize_revenge_value(self.REVENGE_VALUE_PRESETS[0], self.REVENGE_VALUE_PRESETS[1])), 0), 255)
 			if len(self.MULTI_HIT_PRESETS) != 0:
-				self.randomize_multi_hit(self.MULTI_HIT_PRESETS[0], self.MULTI_HIT_PRESETS[1], self.MULTI_HIT_PRESETS[2], attack_entry)
+				attack_entry.Interval = max(self.randomize_multi_hit(self.MULTI_HIT_PRESETS[0], self.MULTI_HIT_PRESETS[1], self.MULTI_HIT_PRESETS[2]), 0)
+			if len(self.HPDRAIN_PRESETS) != 0:
+				attack_entry.HpDrain = min(max(int(round(attack_entry.HpDrain + self.randomize_hpdrain(self.HPDRAIN_PRESETS[0], self.HPDRAIN_PRESETS[1], self.HPDRAIN_PRESETS[2]))), 0), 254)
+			
+			attack_entry.validate()
 			final_attack_entries.append(attack_entry)
 		
 		return final_attack_entries
 
 	def randomize_value(self, value, max_difference, min_difference):
-		increase_value = False
-		if random.randint(0, 100) > 50:
-			increase_value = True
+		if value == 0:
+			return 0
+		increase_value = self.positive_or_negative()
 		if increase_value:
 			multiplier = 1.0 + random.uniform(min_difference, max_difference)
 			return value * multiplier
@@ -571,26 +807,32 @@ class atkpRandomizerClass:
 		index = random.randint(0, 2)
 		return KNOCBACK_LIST[index]
 
-	def randomize_multi_hit(self, chance, minFrames, maxFrames, current_attack_entry: ATKPObject):
+	def randomize_multi_hit(self, chance, minFrames, maxFrames):
 		if random.randint(1, 100) > chance:
-			return
-		current_attack_entry.Interval = random.randint(minFrames, maxFrames)
+			return -1
+		return random.randint(minFrames, maxFrames)
 	
 	# Because a lot of moves have either 0 revenge value or a high amount, randomization
 	# is handled by first determining if any change will happen, then by a flat value.
 	# This is to avoid 0 values being multiplied uselessly or moves with revenge value
 	# to get ridiculously high. Generally, revenge value is not randomized at high
 	# differences because the game would be kind of unplayable. (unless Chaos enabled)
-	def randomize_revenge_value(self, minValue, maxValue):
-		increase_value = False
-		if random.randint(0, 100) > 50:
-			increase_value = True
+	def randomize_revenge_value(self, maxValue, minValue):
+		increase_value = self.positive_or_negative()
 		num = random.randint(minValue, maxValue)
 		if not increase_value:
 			return -num
 		return num
 
-	def randomize_power(self, value):
-		if value == 0:
+	def randomize_hpdrain(self, chance, minValue, maxValue):
+		increase_value = self.positive_or_negative()
+		if random.randint(1, 100) > chance:
 			return 0
-		return self.randomize_value(value, self.DAMAGE_PRESETS[0], self.DAMAGE_PRESETS[1])
+		if not increase_value:
+			return -random.randint(minValue, maxValue)
+		else: return random.randint(minValue, maxValue)
+
+	def positive_or_negative(self):
+		if random.randint(1, 100) > 50: return True
+		return False
+	
